@@ -3,6 +3,7 @@ from empire_operators import (
     ConstraintEnforcer,
     ValidationOperator,
     ErrorRecoveryOperator,
+    DriftMonitor,
 )
 
 
@@ -80,3 +81,35 @@ class TestErrorRecoveryOperator:
         s = ErrorRecoveryOperator().execute({"error": "boom", "retry_count": 3, "max_retries": 3})
         assert s["recovery_action"] == "abort"
         assert s["flags"]["recovered"] is False
+
+
+class TestDriftMonitor:
+    def test_flat_metrics_no_drift(self):
+        s = DriftMonitor().execute(
+            {"baseline_metrics": {"avg_cpu_usage": 50.0}, "current_metrics": {"avg_cpu_usage": 52.0}}
+        )
+        assert s["flags"]["drift_detected"] is False
+        assert s["drift_deviations"] == {}
+
+    def test_deviation_past_threshold_flags_drift(self):
+        s = DriftMonitor().execute(
+            {"baseline_metrics": {"avg_cpu_usage": 40.0}, "current_metrics": {"avg_cpu_usage": 80.0}}
+        )
+        assert s["flags"]["drift_detected"] is True
+        assert s["drift_deviations"] == {"avg_cpu_usage": 100.0}
+
+    def test_missing_and_zero_baseline_keys_are_skipped(self):
+        s = DriftMonitor().execute(
+            {
+                "baseline_metrics": {"avg_cpu_usage": 0, "avg_memory_usage": 30.0},
+                "current_metrics": {"avg_memory_usage": 31.0},
+            }
+        )
+        # zero baseline -> skipped (no div-by-zero); memory present but flat -> no drift
+        assert s["flags"]["drift_detected"] is False
+        assert s["drift_deviations"] == {}
+
+    def test_empty_state_is_honest_noop(self):
+        s = DriftMonitor().execute({})
+        assert s["flags"]["drift_detected"] is False
+        assert s["drift_deviations"] == {}

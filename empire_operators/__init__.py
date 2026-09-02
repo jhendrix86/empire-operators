@@ -7,6 +7,7 @@ from .operators import (
     ConstraintEnforcer,
     ValidationOperator,
     ErrorRecoveryOperator,
+    DriftMonitor,
 )
 from .middleware import SafetyBoundaryMiddleware
 
@@ -18,5 +19,6 @@ __all__ = [
     "ConstraintEnforcer",
     "ValidationOperator",
     "ErrorRecoveryOperator",
+    "DriftMonitor",
     "SafetyBoundaryMiddleware",
 ]

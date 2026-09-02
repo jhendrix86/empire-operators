@@ -24,6 +24,7 @@ Sibling-package install, same pattern as `autonomy-events` / `unkey-auth`:
 | `ConstraintEnforcer` | output length / forbidden-words checks |
 | `ValidationOperator` | required-fields check on a dict output |
 | `ErrorRecoveryOperator` | classify an error → retry/abort with a ceiling |
+| `DriftMonitor` | metric-vs-baseline % deviation → `drift_detected` flag (≥20% on any shared key). Consumed by `monitoring-engine`'s drift-monitoring background loop. |
 | `SafetyBoundaryMiddleware` | ASGI middleware: 400s any POST/PUT/PATCH body matching an unsafe pattern |
 
 ## Middleware
@@ -40,7 +41,7 @@ app.add_middleware(SafetyBoundaryMiddleware, exempt_paths=["/health"])
 
 ## Roadmap
 
-The remaining ~40 general operators (`InputInterpreter`, `DriftMonitor`,
+The remaining ~40 general operators (`InputInterpreter`,
 `AuditCycleOperator`, `AccessControlOperator`, `LifecycleOperator`,
 `PriorityResolver`, …) land here incrementally as they get real fleet
 consumers. See `empire_os/EMPIRE_OS_INTEGRATION_ANALYSIS.md`.
